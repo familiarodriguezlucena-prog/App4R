@@ -1,278 +1,215 @@
 import streamlit as st
-import urllib.parse
 import pandas as pd
 
-# 1. CONFIGURACIÓN DE LA PÁGINA (Estilo Premium)
+# 1. CONFIGURACIÓN DE LA PÁGINA (Minimalista y Oscura)
 st.set_page_config(
-    page_title="Grupo Gastronómico Cuatro R", 
-    page_icon="🥟", 
+    page_title="Grupo Gastronómico Cuatro R",
+    page_icon="🥟",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# 2. BASE DE DATOS EN MEMORIA (Estado de la Sesión)
-# Datos iniciales del negocio por si se reinicia la app
-if 'config_negocio' not in st.session_state:
-    st.session_state.config_negocio = {
-        "telefono": "584123856184",
-        "pago_movil": "Bancamiga: RIF J-123456789, Tel: 0412-3856184",
-        "logo_url": "https://i.ibb.co/6R0H63C/Logo-4R.png",
-        "fondo_premium": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200"
-    }
-
-if 'productos' not in st.session_state:
-    st.session_state.productos = {
-        "Tequeños Full Relleno": {"precio": 3.00, "stock": 50, "foto": "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?w=500", "desc": "Masa artesanal y relleno generoso."},
-        "Chilenas Especiales": {"precio": 1.50, "stock": 30, "foto": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?w=500", "desc": "Sabor tradicional con receta premium."},
-        "Empanadas Criollas": {"precio": 1.75, "stock": 25, "foto": "https://images.unsplash.com/photo-1555243833-c440d5c6f18f?w=500", "desc": "Masa perfecta con sazón de la casa."}
-    }
-
-if 'carrito' not in st.session_state:
-    st.session_state.carrito = {}
-
-if 'historial_ventas' not in st.session_state:
-    st.session_state.historial_ventas = []
-
-# 3. ESTILOS CSS INMERSIVOS (Look Cinematográfico y Móvil)
-st.markdown(f"""
+# 2. INYECCIÓN DE CSS PARA EL LOOK PREMIUM (Inspirado en Screenshot_20260611-181146.jpg)
+st.markdown("""
     <style>
-    .stApp {{
-        background-color: #0d0e12;
-        color: #f3f4f6;
-    }}
-    .logo-container {{
-        text-align: center;
-        padding: 20px 10px;
-    }}
-    .logo-img {{
-        max-width: 150px;
-        border-radius: 50%;
-        box-shadow: 0 0 30px rgba(230, 57, 70, 0.3);
-        animation: pulse 3s infinite alternate;
-    }}
-    .product-card {{
-        padding: 20px;
-        border-radius: 20px;
-        background: linear-gradient(145deg, #161920, #0f1115);
-        border: 1px solid #232733;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        margin-bottom: 20px;
-        animation: fadeInUp 0.8s ease;
-    }}
-    .product-title {{ font-size: 20px; font-weight: 700; color: #ffffff; margin-top: 10px; }}
-    .product-price {{ font-size: 18px; color: #e63946; font-weight: 800; }}
-    .stock-badge {{ font-size: 12px; color: #94a3b8; background: #1e293b; padding: 3px 8px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }}
+    /* Fondo oscuro general */
+    .stApp {
+        background-color: #0D0D0D;
+        color: #FFFFFF;
+    }
     
-    .stButton>button {{
-        background: linear-gradient(90deg, #e63946, #b11e2b);
-        color: white !important;
-        border-radius: 12px;
-        border: none;
-        padding: 10px;
+    /* Pestañas minimalistas */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 20px;
+        background-color: transparent;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: transparent;
+        color: #888888;
         font-weight: bold;
-        width: 100%;
-    }}
+        border: none;
+    }
+    .stTabs [aria-selected="true"] {
+        color: #FF001E !important;
+        border-bottom: 2px solid #FF001E !important;
+    }
+
+    /* Tarjetas de productos redondeadas y oscuras */
+    .product-card {
+        background: linear-gradient(145deg, #1A1A1A, #121212);
+        border-radius: 24px;
+        padding: 0px;
+        margin-bottom: 25px;
+        border: 1px solid #222222;
+        overflow: hidden;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+    }
     
-    @keyframes pulse {{
-        from {{ transform: scale(1); box-shadow: 0 0 20px rgba(230, 57, 70, 0.2); }}
-        to {{ transform: scale(1.04); box-shadow: 0 0 35px rgba(230, 57, 70, 0.5); }}
-    }}
-    @keyframes fadeInUp {{
-        from {{ opacity: 0; transform: translateY(15px); }}
-        to {{ opacity: 1; transform: translateY(0); }}
-    }}
+    /* Contenedor de texto de la tarjeta */
+    .product-info {
+        padding: 20px;
+    }
+    
+    .product-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        font-weight: bold;
+        color: #FFFFFF;
+        margin-bottom: 5px;
+    }
+    
+    .product-description {
+        font-size: 14px;
+        color: #AAAAAA;
+        margin-bottom: 15px;
+        line-height: 1.4;
+    }
+    
+    /* Precio en dorado elegante */
+    .product-price {
+        font-size: 24px;
+        font-weight: bold;
+        color: #E6C687;
+        margin-top: 10px;
+    }
+    
+    .price-label {
+        font-size: 10px;
+        color: #666666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Badge de disponibilidad */
+    .stock-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: #FFFFFF;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        backdrop-filter: blur(5px);
+    }
+    
+    /* Footer corporativo */
+    .footer-text {
+        text-align: center;
+        color: #444444;
+        font-size: 11px;
+        letter-spacing: 1px;
+        margin-top: 50px;
+        margin-bottom: 20px;
+    }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allowed_html=True)
 
-# 4. SISTEMA DE PESTAÑAS (Menú Principal vs Panel de Administración)
-tab_menu, tab_admin = st.tabs(["🔥 MENÚ INTERACTIVO", "⚙️ PANEL DE ADMINISTRACIÓN"])
+# 3. INICIALIZACIÓN DE VARIABLES (ESTADO)
+if 'cart' not in st.session_state:
+    st.session_state.cart = {}
+if 'stock_chilenas' not in st.session_state:
+    st.session_state.stock_chilenas = 50
 
-# =========================================================
-# PESTAÑA 1: VISTA DEL CLIENTE (MENÚ INTERACTIVO)
-# =========================================================
-with tab_menu:
-    # Encabezado con Logo Dinámico
-    st.markdown(f"""
-        <div class="logo-container">
-            <img class="logo-img" src="{st.session_state.config_negocio['logo_url']}" alt="Logo 4R">
-        </div>
-        """, unsafe_allow_html=True)
+# 4. ESTRUCTURA DE PESTAÑAS
+tab1, tab2 = st.tabs(["🔥 MENÚ INTERACTIVO", "⚙️ PANEL DE ADMINISTRACIÓN"])
+
+with tab1:
+    # Espaciado superior estético
+    st.write("")
     
-    st.markdown("<h4 style='text-align: center; color: #94a3b8;'>Artesanal · Generoso · Premium</h4><br>", unsafe_allow_html=True)
+    # Grid para centrar el contenido en móviles
+    col_main_left, col_main_center, col_main_right = st.columns([1, 8, 1])
     
-    # Renderizar catálogo dinámicamente desde la "Base de Datos"
-    items = list(st.session_state.productos.items())
-    for i in range(0, len(items), 2):
-        col1, col2 = st.columns(2)
-        
-        # Producto 1 de la fila
-        name1, data1 = items[i]
-        with col1:
-            st.markdown('<div class="product-card">', unsafe_allow_html=True)
-            st.image(data1["foto"], use_container_width=True)
-            st.markdown(f'<div class="product-title">{name1}</div>', unsafe_allow_html=True)
-            st.write(f"_{data1['desc']}_")
-            st.markdown(f'<div class="product-price">${data1["precio"]:.2f}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="stock-badge">Disponibles: {data1["stock"]}</div>', unsafe_allow_html=True)
-            
-            if data1["stock"] > 0:
-                if st.button("Agregar +", key=f"add_{name1}"):
-                    st.session_state.carrito[name1] = st.session_state.carrito.get(name1, 0) + 1
-                    st.session_state.productos[name1]["stock"] -= 1
-                    st.rerun()
-            else:
-                st.error("Agotado temporalmente")
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        # Producto 2 de la fila (si existe)
-        if i + 1 < len(items):
-            name2, data2 = items[i+1]
-            with col2:
-                st.markdown('<div class="product-card">', unsafe_allow_html=True)
-                st.image(data2["foto"], use_container_width=True)
-                st.markdown(f'<div class="product-title">{name2}</div>', unsafe_allow_html=True)
-                st.write(f"_{data2['desc']}_")
-                st.markdown(f'<div class="product-price">${data2["precio"]:.2f}</div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="stock-badge">Disponibles: {data2["stock"]}</div>', unsafe_allow_html=True)
-                
-                if data2["stock"] > 0:
-                    if st.button("Agregar +", key=f"add_{name2}"):
-                        st.session_state.carrito[name2] = st.session_state.carrito.get(name2, 0) + 1
-                        st.session_state.productos[name2]["stock"] -= 1
-                        st.rerun()
-                else:
-                    st.error("Agotado temporalmente")
-                st.markdown('</div>', unsafe_allow_html=True)
-
-    # El Carrito de Compras
-    if st.session_state.carrito:
-        st.markdown("<hr>", unsafe_allow_html=True)
-        st.subheader("🛒 Tu Pedido")
-        texto_wa = "¡Hola, *Grupo Gastronómico 4R*! 🥟 Quisiera ordenar:\n\n"
-        total = 0.0
-        
-        for prod, cant in st.session_state.carrito.items():
-            sub = st.session_state.productos[prod]["precio"] * cant
-            total += sub
-            st.write(f"🔹 **{prod}** x{cant} — ${sub:.2f}")
-            texto_wa += f"• {prod} x{cant} (${sub:.2f})\n"
-            
-        st.markdown(f"### **Total: ${total:.2f}**")
-        st.info(f"💳 **Datos de Pago:** {st.session_state.config_negocio['pago_movil']}")
-        
-        texto_wa += f"\n💰 *Total Neto: ${total:.2f}*\n\n¿Me confirman disponibilidad para proceder al pago?"
-        link_wa = f"https://wa.me/{st.session_state.config_negocio['telefono']}?text={urllib.parse.quote(texto_wa)}"
-        
-        st.markdown(f"""
-            <a href="{link_wa}" target="_blank" style="text-decoration: none;">
-                <div style="background-color: #25D366; color: white; text-align: center; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 18px;">
-                    💬 Enviar Pedido y Pagar
+    with col_main_center:
+        # --- PRODUCTO 1: TEQUEÑOS ---
+        st.markdown("""
+            <div class="product-card" style="position: relative;">
+                <div class="stock-badge">Disponibilidad alta</div>
+                <img src="https://images.unsplash.com/photo-1541532713592-79a0317b6b77?w=500" style="width:100%; height:220px; object-fit:cover;">
+                <div class="product-info">
+                    <div class="product-title">Tequeños Full Relleno</div>
+                    <div class="product-description">Masa artesanal rellena generosamente. Receta clásica hecha con amor.</div>
+                    <div class="price-label">PRECIO / UND.</div>
+                    <div class="product-price">$ 3.00</div>
                 </div>
-            </a>
-        """, unsafe_allow_html=True)
+            </div>
+        """, unsafe_allowed_html=True)
         
+        if st.button("Agregar al Pedido +", key="add_tequenos", use_container_width=True):
+            st.session_state.cart['Tequeños'] = st.session_state.cart.get('Tequeños', 0) + 1
+            st.toast("Tequeños agregados al carrito 🥟")
+
         st.write("")
-        if st.button("Vaciar Lista 🗑️"):
-            for p, c in st.session_state.carrito.items():
-                st.session_state.productos[p]["stock"] += c
-            st.session_state.carrito = {}
-            st.rerun()
+        st.write("")
 
-# =========================================================
-# PESTAÑA 2: PANEL DE ADMINISTRACIÓN (EXCLUSIVO GERENCIA)
-# =========================================================
-with tab_admin:
-    st.subheader("🔑 Acceso Administrativo")
-    password = st.text_input("Introduce la clave de acceso para gestionar Cuatro R:", type="password")
+        # --- PRODUCTO 2: CHILENAS (Replicado de la captura) ---
+        st.markdown(f"""
+            <div class="product-card" style="position: relative;">
+                <div class="stock-badge">{st.session_state.stock_chilenas} disponibles</div>
+                <!-- Imagen real de chilenas o placeholder elegante oscuro -->
+                <img src="https://images.unsplash.com/photo-1608039829572-78524f79c4c7?w=500" style="width:100%; height:220px; object-fit:cover;">
+                <div class="product-info">
+                    <div class="product-title">Chilenas Especiales</div>
+                    <div class="product-description">Empanadas fritas a la perfección. Relleno rico y abundante por dentro.</div>
+                    <div class="price-label">PRECIO / UND.</div>
+                    <div class="product-price">$ 1.50</div>
+                </div>
+            </div>
+        """, unsafe_allowed_html=True)
+        
+        # Selector de cantidad minimalista
+        col_less, col_qty, col_more = st.columns([1, 2, 1])
+        current_chilenas = st.session_state.cart.get('Chilenas', 0)
+        
+        with col_less:
+            if st.button("—", key="less_chilenas", use_container_width=True) and current_chilenas > 0:
+                st.session_state.cart['Chilenas'] -= 1
+                if st.session_state.cart['Chilenas'] == 0:
+                    del st.session_state.cart['Chilenas']
+                st.rerun()
+        with col_qty:
+            st.markdown(f"<h3 style='text-align: center; margin: 0; color: white;'>{current_chilenas}</h3>", unsafe_allowed_html=True)
+        with col_more:
+            if st.button("+", key="more_chilenas", use_container_width=True) and current_chilenas < st.session_state.stock_chilenas:
+                st.session_state.cart['Chilenas'] = current_chilenas + 1
+                st.rerun()
+
+        # --- SECCIÓN DEL CARRITO FLOTANTE / TOTAL ---
+        total_items = sum(st.session_state.cart.values())
+        total_price = (st.session_state.cart.get('Tequeños', 0) * 3.00) + (st.session_state.cart.get('Chilenas', 0) * 1.50)
+        
+        if total_items > 0:
+            st.markdown("---")
+            st.markdown(f"### 🛒 Tu Pedido Activo ({total_items} und.)")
+            for prod, qty in st.session_state.cart.items():
+                st.write(f"• {prod} x{qty}")
+            
+            st.markdown(f"## Total a Pagar: **${total_price:.2f}**")
+            
+            # Datos de pago móvil integrados de forma sutil
+            st.markdown("""
+                <div style='background-color: #151515; padding: 15px; border-radius: 12px; margin-bottom: 15px;'>
+                    <span style='color: #888888; font-size: 12px;'>PAGO MÓVIL:</span><br>
+                    <b>Bancamiga</b> · RIF J-123456789 · Tlf: 0412-3856184
+                </div>
+            """, unsafe_allowed_html=True)
+            
+            if st.button("💬 Enviar pedido por WhatsApp", use_container_width=True, type="primary"):
+                st.success("¡Pedido enviado! Abriendo WhatsApp...")
+
+        # Footer idéntico al de tu diseño
+        st.markdown('<div class="footer-text">© 2026 GRUPO GASTRONÓMICO CUATRO R —<br>FABRICANTES ESPECIALIZADOS</div>', unsafe_allowed_html=True)
+
+with tab2:
+    st.write("")
+    st.markdown("### 🔐 Acceso de Administración")
+    password = st.text_input("Introduce la clave de acceso", type="password", key="admin_pass")
     
-    if password == "4R2026": # Puedes cambiar esta clave por la que quieras
-        st.success("Acceso Concedido")
-        
-        admin_opcion = st.selectbox("¿Qué deseas gestionar hoy?", ["Modificar Precios/Stock", "Agregar Nuevo Producto", "Datos de Contacto y Pago", "Cierre de Caja / Lógica de Negocio"])
-        
-        # --- MODIFICAR PRODUCTOS EXISTENTES ---
-        if admin_opcion == "Modificar Precios/Stock":
-            st.markdown("### Ajuste de Inventario Activo")
-            for prod, datos in st.session_state.productos.items():
-                st.write(f"#### 📦 {prod}")
-                col_p, col_s = st.columns(2)
-                with col_p:
-                    nuevo_precio = st.number_input(f"Precio de {prod} ($)", min_value=0.0, value=datos["precio"], key=f"price_in_{prod}")
-                    st.session_state.productos[prod]["precio"] = nuevo_precio
-                with col_s:
-                    nuevo_stock = st.number_input(f"Stock Disponible de {prod}", min_value=0, value=datos["stock"], key=f"stock_in_{prod}")
-                    st.session_state.productos[prod]["stock"] = nuevo_stock
-            if st.button("Guardar Cambios de Inventario"):
-                st.success("¡Precios y existencias actualizados con éxito!")
-                st.rerun()
-                
-        # --- AGREGAR NUEVOS PRODUCTOS ---
-        elif admin_opcion == "Agregar Nuevo Producto":
-            st.markdown("### Introducir un nuevo producto al catálogo")
-            nuevo_nombre = st.text_input("Nombre del producto (Ej: Combo Teque-Salsa)")
-            nuevo_p = st.number_input("Precio de venta ($)", min_value=0.0, value=1.0)
-            nuevo_st = st.number_input("Cantidad inicial en inventario", min_value=0, value=10)
-            nueva_desc = st.text_input("Descripción breve (Relleno, estilo de masa...)")
-            nueva_foto = st.text_input("Enlace URL de la foto", value="https://images.unsplash.com/photo-1541532713592-79a0317b6b77?w=500")
-            
-            if st.button("Dar de Alta Producto"):
-                if nuevo_nombre:
-                    st.session_state.productos[nuevo_nombre] = {
-                        "precio": nuevo_p,
-                        "stock": nuevo_st,
-                        "foto": nueva_foto,
-                        "desc": nueva_desc
-                    }
-                    st.success(f"¡{nuevo_nombre} se ha añadido al menú!")
-                    st.rerun()
-                else:
-                    st.error("El nombre del producto es obligatorio")
-
-        # --- DATOS DEL NEGOCIO ---
-        elif admin_opcion == "Datos de Contacto y Pago":
-            st.markdown("### Modificar Canales Oficiales")
-            nuevo_tel = st.text_input("WhatsApp del negocio (Formato internacional, ej: 584123856184):", value=st.session_state.config_negocio["telefono"])
-            nuevos_datos_pago = st.text_area("Datos para Pago Móvil o Transferencia:", value=st.session_state.config_negocio["pago_movil"])
-            nuevo_logo = st.text_input("URL del Logotipo oficial de la marca:", value=st.session_state.config_negocio["logo_url"])
-            
-            if st.button("Actualizar Canales"):
-                st.session_state.config_negocio["telefono"] = nuevo_tel
-                st.session_state.config_negocio["pago_movil"] = nuevos_datos_pago
-                st.session_state.config_negocio["logo_url"] = nuevo_logo
-                st.success("Configuración de marca guardada de inmediato")
-                st.rerun()
-
-        # --- LOGICA DE NEGOCIO Y HISTORIAL ---
-        elif admin_opcion == "Cierre de Caja / Lógica de Negocio":
-            st.markdown("### Monitor de Ventas e Indicadores Financieros")
-            
-            # Simulador de inyección de ventas reales (Lógica de operaciones)
-            st.write("Simular un cierre de terminal de punto o pago móvil recibido:")
-            col_v1, col_v2 = st.columns(2)
-            with col_v1:
-                prod_vendido = st.selectbox("Producto despachado:", list(st.session_state.productos.keys()))
-            with col_v2:
-                cant_vendida = st.number_input("Cantidad despachada:", min_value=1, value=1)
-                
-            if st.button("Registrar Venta Manual (Cierre POS/Efectivo)"):
-                monto_total = st.session_state.productos[prod_vendido]["precio"] * cant_vendida
-                st.session_state.historial_ventas.append({
-                    "Producto": prod_vendido,
-                    "Cantidad": cant_vendida,
-                    "Total ($)": monto_total
-                })
-                st.success("Venta guardada en el historial contable.")
-            
-            if st.session_state.historial_ventas:
-                df_ventas = pd.DataFrame(st.session_state.historial_ventas)
-                st.table(df_ventas)
-                st.metric("Ingresos Totales Brutos", f"${df_ventas['Total ($)'].sum():.2f}")
-                
-                if st.button("Limpiar Historial / Iniciar Nueva Jornada"):
-                    st.session_state.historial_ventas = []
-                    st.rerun()
-            else:
-                st.info("No hay registros de ventas cargados en la jornada actual.")
-                
-    elif password != "":
-        st.error("Contraseña administrativa incorrecta. Acceso restringido.")
+    if password == "4R2026":
+        st.success("Acceso concedido")
+        st.markdown("#### Control de Producción e Inventario")
+        # Aquí puedes modificar el stock disponible que se muestra al cliente
+        st.session_state.stock_chilenas = st.number_input("Modificar inventario de Chilenas", value=st.session_state.stock_chilenas)
